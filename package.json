@@ -1,0 +1,25 @@
+{
+  "name": "local-agent-runner",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/electron/main/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.electron.json && vite build",
+    "start": "npm run build && electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@vitejs/plugin-react": "^6.0.2",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "vite": "^8.0.13"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "electron": "^41.6.1",
+    "typescript": "^6.0.3"
+  }
+}
