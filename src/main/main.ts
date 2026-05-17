@@ -1,6 +1,8 @@
 import { app, BrowserWindow } from "electron";
 import path from "node:path";
 
+const rendererDevServerUrl = process.env.VITE_DEV_SERVER_URL;
+
 let mainWindow: BrowserWindow | null = null;
 
 function createWindow() {
@@ -15,7 +17,11 @@ function createWindow() {
     },
   });
 
-  void mainWindow.loadFile(path.join(__dirname, "../../renderer/index.html"));
+  if (rendererDevServerUrl) {
+    void mainWindow.loadURL(rendererDevServerUrl);
+  } else {
+    void mainWindow.loadFile(path.join(__dirname, "../../renderer/index.html"));
+  }
 }
 
 app.whenReady().then(() => {
