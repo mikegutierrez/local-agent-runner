@@ -1,66 +1,25 @@
-export type WorkspaceSelection = {
-  path: string;
-  name: string;
-};
-
-export type WorkspaceMetadata = WorkspaceSelection & {
-  packageJson: {
-    name?: string;
-    version?: string;
-    description?: string;
-    scripts: Record<string, string>;
-  } | null;
-  git: {
-    isRepo: boolean;
-    branch?: string;
-    hasUncommittedChanges?: boolean;
-  };
-};
-
-export type StartScriptRunInput = {
-  workspacePath: string;
-  scriptName: string;
-};
-
-export type RunStarted = {
-  runId: string;
-  workspacePath: string;
-  scriptName: string;
-  startedAt: string;
-};
-
-export type RunLifecycleState =
-  | "starting"
-  | "running"
-  | "completed"
-  | "failed"
-  | "cancelled";
-
-export type RunEvent =
-  | {
-      type: "state";
-      runId: string;
-      state: RunLifecycleState;
-      timestamp: string;
-      exitCode?: number;
-      errorMessage?: string;
-    }
-  | {
-      type: "output";
-      runId: string;
-      stream: "stdout" | "stderr";
-      chunk: string;
-      timestamp: string;
-    };
+import type {
+  StartScriptRunRequest,
+  StartScriptRunResponse,
+  RunEvent,
+  CancelRunRequest,
+} from "./runs/types";
+import type {
+  WorkspaceSelection,
+  InspectWorkspaceResponse,
+  InspectWorkspaceRequest,
+} from "./workspaces/types";
 
 export type DesktopAPI = {
   workspaces: {
     pickFolder(): Promise<WorkspaceSelection | null>;
-    inspect(path: string): Promise<WorkspaceMetadata>;
+    inspect(input: InspectWorkspaceRequest): Promise<InspectWorkspaceResponse>;
   };
   runs: {
-    startScript(input: StartScriptRunInput): Promise<RunStarted>;
-    cancel(runId: string): Promise<void>;
+    startScript(input: StartScriptRunRequest): Promise<StartScriptRunResponse>;
+    cancel(input: CancelRunRequest): Promise<void>;
+    // Subscribe to run lifecycle/output events pushed from the main process.
+    // The returned function removes the listener and should be called on cleanup.
     onEvent(listener: (event: RunEvent) => void): () => void;
   };
 };

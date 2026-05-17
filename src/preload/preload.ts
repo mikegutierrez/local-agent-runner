@@ -1,25 +1,20 @@
 import { contextBridge } from "electron";
 import type { DesktopAPI } from "../shared/desktop-api";
 
+function notImplemented(methodName: string): never {
+  throw new Error(`window.desktop.${methodName} is not implemented yet`);
+}
+
+// TODO: import ipcRenderer and IPC_CHANNELS
 const desktopAPI: DesktopAPI = {
   workspaces: {
-    pickFolder: async () => null,
-    inspect: async (path) => ({
-      path,
-      name: "string",
-      packageJson: { scripts: { start: "start" } },
-      git: { isRepo: true },
-    }),
+    pickFolder: async () => notImplemented("workspaces.pickFolder"),
+    inspect: async () => notImplemented("workspaces.inspect"),
   },
   runs: {
-    startScript: async ({ workspacePath, scriptName }) => ({
-      workspacePath,
-      scriptName,
-      runId: "placeholder-run",
-      startedAt: new Date().toISOString(),
-    }),
-    cancel: async (_runId) => {},
-    onEvent: (_listener) => () => {},
+    startScript: async () => notImplemented("runs.startScript"),
+    cancel: async () => notImplemented("runs.cancel"),
+    onEvent: () => notImplemented("runs.onEvent"),
   },
 };
 
