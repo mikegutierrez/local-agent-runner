@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from "electron";
 import path from "node:path";
+import { registerIpcHandlers } from "./ipc/registerIpcHandlers";
 
 const rendererDevServerUrl = process.env.VITE_DEV_SERVER_URL;
 
@@ -25,6 +26,7 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
+  registerIpcHandlers();
   createWindow();
 
   app.on("activate", () => {
