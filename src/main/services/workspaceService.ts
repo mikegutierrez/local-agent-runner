@@ -27,7 +27,6 @@ export const workspacesPickFolder =
     return { path: filePath, name };
   };
 
-// TODO: move to utils
 const parsePackageJson = async ({
   path: filePath,
 }: InspectWorkspaceRequest): Promise<WorkspaceMetadata["packageJson"]> => {
