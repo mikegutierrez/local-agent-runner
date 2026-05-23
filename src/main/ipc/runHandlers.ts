@@ -1,4 +1,4 @@
 import { runsStartScript, runsCancel } from "../services/runsService";
 
-export const runsStartScriptHandler = () => runsStartScript();
-export const runsCancelHandler = () => runsCancel();
+export const handleStartScriptRun = () => runsStartScript();
+export const handleCancelRun = () => runsCancel();

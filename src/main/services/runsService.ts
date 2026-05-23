@@ -4,4 +4,3 @@ function notImplemented(methodName: string): never {
 
 export const runsStartScript = () => notImplemented("runsStartScript");
 export const runsCancel = () => notImplemented("runsCancel");
-export const runsEvent = () => notImplemented("runsEvent");

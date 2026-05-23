@@ -4,7 +4,7 @@ import {
   pickWorkspaceFolder,
 } from "../services/workspaceService";
 
-export const handlePickWorkspaceFolder = async () => await pickWorkspaceFolder();
+export const handlePickWorkspaceFolder = () => pickWorkspaceFolder();
 export const handleInspectWorkspace = async (
   input: InspectWorkspaceRequest,
-) => await inspectWorkspace(input);
+) => inspectWorkspace(input);

@@ -4,14 +4,14 @@ import {
   handlePickWorkspaceFolder,
   handleInspectWorkspace,
 } from "./workspaceHandlers";
-import { runsStartScriptHandler, runsCancelHandler } from "./runHandlers";
+import { handleStartScriptRun, handleCancelRun } from "./runHandlers";
 import { InspectWorkspaceRequest } from "../../shared/workspaces/types";
 
 export function registerIpcHandlers() {
   // Workspaces
   ipcMain.handle(
     IPC_CHANNELS.workspacesPickFolder,
-    async () => await handlePickWorkspaceFolder(),
+    () => handlePickWorkspaceFolder(),
   );
   ipcMain.handle(
     IPC_CHANNELS.workspacesInspect,
@@ -20,6 +20,6 @@ export function registerIpcHandlers() {
   );
 
   // Runs
-  ipcMain.handle(IPC_CHANNELS.runsStartScript, runsStartScriptHandler);
-  ipcMain.handle(IPC_CHANNELS.runsCancel, runsCancelHandler);
+  ipcMain.handle(IPC_CHANNELS.runsStartScript, handleStartScriptRun);
+  ipcMain.handle(IPC_CHANNELS.runsCancel, handleCancelRun);
 }
