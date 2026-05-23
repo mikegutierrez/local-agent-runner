@@ -1,29 +1,79 @@
-import { useCallback, useState } from "react";
-import { WorkspaceSelection } from "../shared/workspaces/types";
+import { MetadataStatus } from "../shared/workspaces/types";
+import { useWorkspace } from "./hooks/useWorkspace";
 
 export function App() {
-  const [folder, setFolder] = useState<WorkspaceSelection | null>(null);
-
-  const onSelectRepository = useCallback(async () => {
-    const result = await window.desktop.workspaces.pickFolder();
-    setFolder(result);
-  }, []);
-
-  const onClearRepository = useCallback(() => setFolder(null), []);
+  const {
+    selection,
+    packageMetadata,
+    packageError,
+    scripts,
+    scriptsStatus,
+    scriptsError,
+    git,
+    onClearWorkspace,
+    onPickWorkspaceFolder,
+    onInspectWorkspace,
+  } = useWorkspace();
 
   return (
     <main id="app-root">
       <header>
         <h1>Local Agent Runner</h1>
-        <button onClick={onSelectRepository}>Select repository</button>
-        {folder && (
+        <button onClick={onPickWorkspaceFolder}>Select workspace</button>
+        {selection && (
           <section>
             <div>
-              <p>{folder.name}</p>
-              <pre>{folder.path}</pre>
+              <h2>{selection.name}</h2>
+              <pre>{selection.path}</pre>
             </div>
             <br />
-            <button onClick={onClearRepository}>Clear repository</button>
+            <button
+              onClick={() => onInspectWorkspace({ path: selection.path })}
+            >
+              Inspect workspace
+            </button>
+            <br />
+
+            {packageMetadata && (
+              <div>
+                {packageMetadata.name && <h3>{packageMetadata.name}</h3>}
+                {packageMetadata.version && <h4>{packageMetadata.version}</h4>}
+                {packageMetadata.description && (
+                  <p>{packageMetadata.description}</p>
+                )}
+              </div>
+            )}
+            {packageError && <h4>{packageError}</h4>}
+            {scriptsError && <h4>{scriptsError}</h4>}
+            {scriptsStatus === MetadataStatus.MISSING && (
+              <h4>No scripts found</h4>
+            )}
+            <div style={{ display: "flex", flexDirection: "row", gap: 8 }}>
+              {scriptsStatus === MetadataStatus.OK && scripts && (
+                <div style={{ width: "60%" }}>
+                  <h3>Scripts</h3>
+                  <pre>{JSON.stringify(scripts, null, 2)}</pre>
+                </div>
+              )}
+              {git?.isRepo && (
+                <div style={{ width: "40%" }}>
+                  <h3>git</h3>
+                  <pre>
+                    {JSON.stringify(
+                      {
+                        branch: git.branch,
+                        hasUncommittedChanges: git.hasUncommittedChanges,
+                      },
+                      null,
+                      2,
+                    )}
+                  </pre>
+                </div>
+              )}
+            </div>
+
+            <br />
+            <button onClick={onClearWorkspace}>Clear workspace</button>
           </section>
         )}
       </header>
