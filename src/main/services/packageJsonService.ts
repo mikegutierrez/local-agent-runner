@@ -10,20 +10,20 @@ import {
   InspectWorkspaceRequest,
   PackageJsonEnvelope,
   PackageScriptsEnvelope,
-  MetadataStatus,
+  InspectionStatus,
 } from "../../shared/workspaces/types";
 
 type NodeFileError = Error & { code?: string };
 
 const parsePackageScripts = (value: unknown): PackageScriptsEnvelope => {
-  if (value === undefined) return { status: MetadataStatus.MISSING };
+  if (value === undefined) return { status: InspectionStatus.MISSING };
   if (!isRecordOf(value, isString))
     return {
-      status: MetadataStatus.INVALID,
+      status: InspectionStatus.INVALID,
       error: "package.json scripts must be an object with string values.",
     };
   return {
-    status: MetadataStatus.OK,
+    status: InspectionStatus.OK,
     data: value,
   };
 };
@@ -42,7 +42,7 @@ export const parsePackageJson = async ({
     const readError = error as NodeFileError;
     const isMissing = readError?.code === "ENOENT";
     return {
-      status: isMissing ? MetadataStatus.MISSING : MetadataStatus.INVALID,
+      status: isMissing ? InspectionStatus.MISSING : InspectionStatus.INVALID,
       error: isMissing
         ? "No package.json found in this workspace."
         : "Unable to read package.json.",
@@ -54,13 +54,13 @@ export const parsePackageJson = async ({
     parsed = JSON.parse(raw);
   } catch {
     return {
-      status: MetadataStatus.INVALID,
+      status: InspectionStatus.INVALID,
       error: "package.json contains invalid JSON.",
     };
   }
   if (!isPlainObject(parsed)) {
     return {
-      status: MetadataStatus.INVALID,
+      status: InspectionStatus.INVALID,
       error: "package.json must contain a JSON object.",
     };
   }
@@ -68,7 +68,7 @@ export const parsePackageJson = async ({
   const scripts = parsePackageScripts(parsed.scripts);
 
   return {
-    status: MetadataStatus.OK,
+    status: InspectionStatus.OK,
     data: {
       ...(isString(parsed.name) && { name: parsed.name }),
       ...(isString(parsed.version) && { version: parsed.version }),

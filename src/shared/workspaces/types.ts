@@ -3,16 +3,16 @@ export type WorkspaceSelection = {
   name: string;
 };
 
-export enum MetadataStatus {
+export enum InspectionStatus {
   OK = "ok",
   MISSING = "missing",
   INVALID = "invalid",
 }
 
 export type PackageScriptsEnvelope =
-  | { status: MetadataStatus.OK; data: Record<string, string> }
-  | { status: MetadataStatus.MISSING }
-  | { status: MetadataStatus.INVALID; error: string };
+  | { status: InspectionStatus.OK; data: Record<string, string> }
+  | { status: InspectionStatus.MISSING }
+  | { status: InspectionStatus.INVALID; error: string };
 
 export type PackageMetadata = {
   name?: string;
@@ -22,9 +22,9 @@ export type PackageMetadata = {
 };
 
 export type PackageJsonEnvelope =
-  | { status: MetadataStatus.OK; data: PackageMetadata }
-  | { status: MetadataStatus.MISSING; error?: string }
-  | { status: MetadataStatus.INVALID; error?: string };
+  | { status: InspectionStatus.OK; data: PackageMetadata }
+  | { status: InspectionStatus.MISSING; error?: string }
+  | { status: InspectionStatus.INVALID; error?: string };
 
 export type GitMetadata = {
   isRepo: boolean;

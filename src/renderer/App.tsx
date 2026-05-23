@@ -1,4 +1,4 @@
-import { MetadataStatus } from "../shared/workspaces/types";
+import { InspectionStatus } from "../shared/workspaces/types";
 import { useWorkspace } from "./hooks/useWorkspace";
 
 export function App() {
@@ -10,16 +10,16 @@ export function App() {
     scriptsStatus,
     scriptsError,
     git,
-    onClearWorkspace,
-    onPickWorkspaceFolder,
-    onInspectWorkspace,
+    clearWorkspace,
+    pickWorkspace,
+    inspectWorkspace,
   } = useWorkspace();
 
   return (
     <main id="app-root">
       <header>
         <h1>Local Agent Runner</h1>
-        <button onClick={onPickWorkspaceFolder}>Select workspace</button>
+        <button onClick={pickWorkspace}>Select workspace</button>
         {selection && (
           <section>
             <div>
@@ -28,7 +28,7 @@ export function App() {
             </div>
             <br />
             <button
-              onClick={() => onInspectWorkspace({ path: selection.path })}
+              onClick={() => inspectWorkspace({ path: selection.path })}
             >
               Inspect workspace
             </button>
@@ -45,11 +45,11 @@ export function App() {
             )}
             {packageError && <h4>{packageError}</h4>}
             {scriptsError && <h4>{scriptsError}</h4>}
-            {scriptsStatus === MetadataStatus.MISSING && (
+            {scriptsStatus === InspectionStatus.MISSING && (
               <h4>No scripts found</h4>
             )}
             <div style={{ display: "flex", flexDirection: "row", gap: 8 }}>
-              {scriptsStatus === MetadataStatus.OK && scripts && (
+              {scriptsStatus === InspectionStatus.OK && scripts && (
                 <div style={{ width: "60%" }}>
                   <h3>Scripts</h3>
                   <pre>{JSON.stringify(scripts, null, 2)}</pre>
@@ -73,7 +73,7 @@ export function App() {
             </div>
 
             <br />
-            <button onClick={onClearWorkspace}>Clear workspace</button>
+            <button onClick={clearWorkspace}>Clear workspace</button>
           </section>
         )}
       </header>

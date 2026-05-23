@@ -1,11 +1,10 @@
 import { InspectWorkspaceRequest } from "../../shared/workspaces/types";
 import {
-  workspacesInspect,
-  workspacesPickFolder,
+  inspectWorkspace,
+  pickWorkspaceFolder,
 } from "../services/workspaceService";
 
-export const workspacesPickFolderHandler = async () =>
-  await workspacesPickFolder();
-export const workspacesInspectHandler = async (
+export const handlePickWorkspaceFolder = async () => await pickWorkspaceFolder();
+export const handleInspectWorkspace = async (
   input: InspectWorkspaceRequest,
-) => await workspacesInspect(input);
+) => await inspectWorkspace(input);

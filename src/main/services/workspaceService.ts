@@ -6,10 +6,10 @@ import {
   InspectWorkspaceResponse,
   WorkspaceSelection,
 } from "../../shared/workspaces/types";
-import { parseGitOutput } from "./gitService";
+import { inspectGitMetadata } from "./gitService";
 import { parsePackageJson } from "./packageJsonService";
 
-export const workspacesPickFolder =
+export const pickWorkspaceFolder =
   async (): Promise<WorkspaceSelection | null> => {
     const result = await dialog.showOpenDialog({
       title: "Pick a workspace",
@@ -26,7 +26,7 @@ export const workspacesPickFolder =
     return { path: filePath, name };
   };
 
-export const workspacesInspect = async ({
+export const inspectWorkspace = async ({
   path: filePath,
 }: InspectWorkspaceRequest): Promise<InspectWorkspaceResponse> => {
   const workspaceSelection = {
@@ -35,7 +35,7 @@ export const workspacesInspect = async ({
   };
 
   const packageJson = await parsePackageJson({ path: filePath });
-  const git = await parseGitOutput({ path: filePath });
+  const git = await inspectGitMetadata({ path: filePath });
 
   return {
     ...workspaceSelection,

@@ -1,8 +1,8 @@
-import { workspacesInspect } from "../src/main/services/workspaceService";
+import { inspectWorkspace } from "../src/main/services/workspaceService";
 
 try {
   const path = process.argv[2] ?? process.cwd();
-  workspacesInspect({ path }).then((result) => {
+  inspectWorkspace({ path }).then((result) => {
     console.dir(result, { depth: null });
   });
 } catch (error) {

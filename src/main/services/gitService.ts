@@ -4,7 +4,7 @@ import {
 } from "../../shared/workspaces/types";
 import { runExec } from "../processes/runExec";
 
-export const parseGitOutput = async ({
+export const inspectGitMetadata = async ({
   path: filePath,
 }: InspectWorkspaceRequest): Promise<WorkspaceMetadata["git"]> => {
   const revParse = await runExec({

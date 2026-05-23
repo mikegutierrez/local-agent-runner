@@ -5,22 +5,21 @@ import {
   InspectWorkspaceRequest,
   PackageMetadata,
   GitMetadata,
-  MetadataStatus,
+  InspectionStatus,
 } from "../../shared/workspaces/types";
 import { inspectWorkspace, pickWorkspaceFolder } from "../desktop/workspaces";
 
 type UseWorkspaceResult = {
   selection: WorkspaceSelection | null;
-  packageJsonStatus: MetadataStatus | undefined;
   packageMetadata: Omit<PackageMetadata, "scripts"> | null;
   packageError: string | undefined;
   scripts: Record<string, string> | null;
-  scriptsStatus: MetadataStatus | undefined;
+  scriptsStatus: InspectionStatus | undefined;
   scriptsError: string | undefined;
   git: GitMetadata | undefined;
-  onClearWorkspace: () => void;
-  onPickWorkspaceFolder: () => Promise<void>;
-  onInspectWorkspace: ({ path }: InspectWorkspaceRequest) => Promise<void>;
+  clearWorkspace: () => void;
+  pickWorkspace: () => Promise<void>;
+  inspectWorkspace: ({ path }: InspectWorkspaceRequest) => Promise<void>;
 };
 
 export const useWorkspace = (): UseWorkspaceResult => {
@@ -28,18 +27,18 @@ export const useWorkspace = (): UseWorkspaceResult => {
   const [workspaceMetadata, setWorkspaceMetadata] =
     useState<WorkspaceMetadata | null>(null);
 
-  const onClearWorkspace = (): void => {
+  const clearWorkspace = (): void => {
     setSelection(null);
     setWorkspaceMetadata(null);
   };
 
-  const onPickWorkspaceFolder = async (): Promise<void> => {
+  const pickWorkspace = async (): Promise<void> => {
     const result = await pickWorkspaceFolder();
     setWorkspaceMetadata(null);
     setSelection(result);
   };
 
-  const onInspectWorkspace = async ({
+  const inspectSelectedWorkspace = async ({
     path,
   }: InspectWorkspaceRequest): Promise<void> => {
     setWorkspaceMetadata(null);
@@ -49,9 +48,8 @@ export const useWorkspace = (): UseWorkspaceResult => {
 
   // --- Package ---
   const packageJson = workspaceMetadata?.packageJson;
-  const packageJsonStatus = packageJson?.status;
   const packageMetadata =
-    packageJson?.status === MetadataStatus.OK
+    packageJson?.status === InspectionStatus.OK
       ? {
           name: packageJson.data.name,
           version: packageJson.data.version,
@@ -60,21 +58,23 @@ export const useWorkspace = (): UseWorkspaceResult => {
       : null;
 
   const packageError =
-    packageJson?.status !== MetadataStatus.OK ? packageJson?.error : undefined;
+    packageJson?.status !== InspectionStatus.OK ? packageJson?.error : undefined;
 
   // --- Scripts ---
   const scriptsEnvelope =
-    workspaceMetadata?.packageJson.status === MetadataStatus.OK
+    workspaceMetadata?.packageJson.status === InspectionStatus.OK
       ? workspaceMetadata.packageJson.data.scripts
       : undefined;
 
   const scriptsStatus = scriptsEnvelope?.status;
 
   const scripts =
-    scriptsEnvelope?.status === MetadataStatus.OK ? scriptsEnvelope.data : null;
+    scriptsEnvelope?.status === InspectionStatus.OK
+      ? scriptsEnvelope.data
+      : null;
 
   const scriptsError =
-    scriptsEnvelope?.status === MetadataStatus.INVALID
+    scriptsEnvelope?.status === InspectionStatus.INVALID
       ? scriptsEnvelope.error
       : undefined;
 
@@ -83,15 +83,14 @@ export const useWorkspace = (): UseWorkspaceResult => {
 
   return {
     selection,
-    packageJsonStatus,
     packageMetadata,
     packageError,
     scripts,
     scriptsStatus,
     scriptsError,
     git,
-    onClearWorkspace,
-    onPickWorkspaceFolder,
-    onInspectWorkspace,
+    clearWorkspace,
+    pickWorkspace,
+    inspectWorkspace: inspectSelectedWorkspace,
   };
 };
