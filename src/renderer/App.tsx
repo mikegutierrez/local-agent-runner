@@ -1,5 +1,6 @@
 import { InspectionStatus } from "../shared/workspaces/types";
 import { useWorkspace } from "./hooks/useWorkspace";
+import { classNames } from "./utils/classNames";
 
 export function App() {
   const {
@@ -13,6 +14,8 @@ export function App() {
     clearWorkspace,
     pickWorkspace,
     inspectWorkspace,
+    inspectError,
+    isLoading,
   } = useWorkspace();
 
   return (
@@ -31,7 +34,14 @@ export function App() {
         <section className="workspace-shell">
           <div className="workspace-header">
             <div className="workspace-title">
-              <span className="status-dot" aria-hidden="true" />
+              <span
+                className={classNames({
+                  "status-dot": true,
+                  "status-dot-loading": isLoading,
+                  "status-dot-error": Boolean(inspectError),
+                })}
+                aria-hidden="true"
+              />
               <div>
                 <h2>{selection.name}</h2>
                 <code>{selection.path}</code>
@@ -40,6 +50,7 @@ export function App() {
             <div className="workspace-actions">
               <button
                 className="button button-secondary"
+                disabled={isLoading}
                 onClick={() => inspectWorkspace({ path: selection.path })}
               >
                 Inspect workspace
@@ -73,18 +84,28 @@ export function App() {
                   )}
                 </div>
               ) : (
-                <p className="empty-state">
-                  Inspect the workspace to load package metadata.
-                </p>
+                <>
+                  {inspectError ? (
+                    <p className="message message-error">{inspectError}</p>
+                  ) : (
+                    <p className="empty-state">
+                      Inspect the workspace to load package metadata.
+                    </p>
+                  )}
+                </>
               )}
 
-              {packageError && <p className="message message-error">{packageError}</p>}
+              {packageError && (
+                <p className="message message-error">{packageError}</p>
+              )}
             </section>
 
             <section className="panel">
               <div className="panel-header">
                 <h3>Git</h3>
-                {git?.isRepo && <span className="pill pill-green">repository</span>}
+                {git?.isRepo && (
+                  <span className="pill pill-green">repository</span>
+                )}
               </div>
 
               {git?.isRepo ? (
@@ -96,7 +117,9 @@ export function App() {
                   <div>
                     <span>Status</span>
                     <strong>
-                      {git.hasUncommittedChanges ? "Uncommitted changes" : "Clean"}
+                      {git.hasUncommittedChanges
+                        ? "Uncommitted changes"
+                        : "Clean"}
                     </strong>
                   </div>
                 </div>
@@ -112,7 +135,9 @@ export function App() {
             <div className="panel-header">
               <h3>Scripts</h3>
               {scripts && (
-                <span className="pill">{Object.keys(scripts).length} found</span>
+                <span className="pill">
+                  {Object.keys(scripts).length} found
+                </span>
               )}
             </div>
 
@@ -122,18 +147,50 @@ export function App() {
             {scriptsStatus === InspectionStatus.MISSING && (
               <p className="message">No scripts found.</p>
             )}
-            {scriptsError && <p className="message message-error">{scriptsError}</p>}
+            {scriptsError && (
+              <p className="message message-error">{scriptsError}</p>
+            )}
             {!scriptsStatus && (
               <p className="empty-state">
                 Inspect the workspace to discover available npm scripts.
               </p>
             )}
           </section>
+
+          {scripts && (
+            <section className="panel scripts-panel execute-scripts">
+              <div className="panel-header">
+                <h3>Execute scripts</h3>
+              </div>
+              <ul>
+                <li>
+                  <span>Name</span>
+                  <span>Command</span>
+                </li>
+                {Object.entries(scripts).map(([name, command]) => (
+                  <li key={name}>
+                    <span>{name}</span>
+                    <span>{command}</span>
+                    <span>
+                      <button
+                        disabled
+                        className="button button-small button-ghost"
+                      >
+                        Execute
+                      </button>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
         </section>
       ) : (
         <section className="empty-workspace">
           <h2>No workspace selected</h2>
-          <p>Choose a local project folder to inspect package and git metadata.</p>
+          <p>
+            Choose a local project folder to inspect package and git metadata.
+          </p>
         </section>
       )}
     </main>

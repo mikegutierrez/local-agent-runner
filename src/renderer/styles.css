@@ -21,6 +21,7 @@
   --yellow: #c8b98c;
   --red: #c28f91;
   --shadow: rgba(9, 11, 13, 0.62);
+  --gap: 16px;
 }
 
 * {
@@ -162,9 +163,20 @@ h4 {
   color: var(--text);
 }
 
+.button-small {
+  min-height: 26px;
+  padding: 0 9px;
+  font-size: 14px;
+}
+
 .button-primary,
 .button-secondary {
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.08) inset;
+}
+
+.button:disabled {
+  pointer-events: none;
+  opacity: 40%;
 }
 
 .workspace-shell,
@@ -215,6 +227,21 @@ h4 {
   white-space: nowrap;
 }
 
+@keyframes pulse {
+  0% {
+    transform: scale(0.95);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(0.95);
+    opacity: 1;
+  }
+}
+
 .status-dot {
   width: 10px;
   height: 10px;
@@ -222,6 +249,20 @@ h4 {
   border-radius: 999px;
   background: var(--green);
   box-shadow: 0 0 0 4px rgba(155, 185, 159, 0.14);
+  transition:
+    background 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.status-dot-loading {
+  animation: pulse 2s infinite;
+  background: var(--accent-strong);
+  box-shadow: 0 0 0 4px rgb(169, 189, 215, 0.14);
+}
+
+.status-dot-error {
+  background: var(--red);
+  box-shadow: 0 0 0 4px rgba(194, 143, 145, 0.14);
 }
 
 .workspace-actions {
@@ -234,8 +275,8 @@ h4 {
 .inspector-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
-  gap: 16px;
-  margin-top: 16px;
+  gap: var(--gap);
+  margin-top: var(--gap);
 }
 
 .panel {
@@ -251,7 +292,7 @@ h4 {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: var(--gap);
 }
 
 .pill {
@@ -298,7 +339,7 @@ h4 {
 }
 
 .scripts-panel {
-  margin-top: 16px;
+  margin-top: var(--gap);
 }
 
 .message {
@@ -308,6 +349,39 @@ h4 {
 
 .message-error {
   color: var(--red);
+}
+
+.execute-scripts ul {
+  list-style: none;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-deep);
+  color: var(--text);
+}
+
+.execute-scripts li {
+  border-top: 1px solid var(--border);
+  padding: 8px var(--gap);
+  display: grid;
+    grid-template-columns: calc(100% / 3);
+    align-content: space-around;
+    align-items: center;
+    grid-auto-flow: column;
+}
+
+.execute-scripts li:first-of-type {
+  border-color: transparent;
+  background: var(--surface-muted);
+  color: var(--accent-strong);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.execute-scripts button {
+  float: right;
+  margin-right: var(--gap);
 }
 
 @media (max-width: 760px) {

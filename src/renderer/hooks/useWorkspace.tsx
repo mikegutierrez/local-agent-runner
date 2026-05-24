@@ -20,19 +20,27 @@ type UseWorkspaceResult = {
   clearWorkspace: () => void;
   pickWorkspace: () => Promise<void>;
   inspectWorkspace: ({ path }: InspectWorkspaceRequest) => Promise<void>;
+  inspectError: string | undefined;
+  isLoading: boolean;
 };
 
 export const useWorkspace = (): UseWorkspaceResult => {
   const [selection, setSelection] = useState<WorkspaceSelection | null>(null);
   const [workspaceMetadata, setWorkspaceMetadata] =
     useState<WorkspaceMetadata | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [inspectError, setInspectError] = useState<string>();
 
   const clearWorkspace = (): void => {
     setSelection(null);
     setWorkspaceMetadata(null);
+    setIsLoading(false);
+    setInspectError(undefined);
   };
 
   const pickWorkspace = async (): Promise<void> => {
+    setInspectError(undefined);
+    setIsLoading(false);
     const result = await pickWorkspaceFolder();
     setWorkspaceMetadata(null);
     setSelection(result);
@@ -42,8 +50,16 @@ export const useWorkspace = (): UseWorkspaceResult => {
     path,
   }: InspectWorkspaceRequest): Promise<void> => {
     setWorkspaceMetadata(null);
-    const result = await inspectWorkspace({ path });
-    setWorkspaceMetadata(result);
+    setInspectError(undefined);
+    setIsLoading(true);
+    try {
+      const result = await inspectWorkspace({ path });
+      setWorkspaceMetadata(result);
+    } catch {
+      setInspectError("An error occurred while inspecting the workspace.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // --- Package ---
@@ -58,7 +74,9 @@ export const useWorkspace = (): UseWorkspaceResult => {
       : null;
 
   const packageError =
-    packageJson?.status !== InspectionStatus.OK ? packageJson?.error : undefined;
+    packageJson?.status !== InspectionStatus.OK
+      ? packageJson?.error
+      : undefined;
 
   // --- Scripts ---
   const scriptsEnvelope =
@@ -92,5 +110,7 @@ export const useWorkspace = (): UseWorkspaceResult => {
     clearWorkspace,
     pickWorkspace,
     inspectWorkspace: inspectSelectedWorkspace,
+    inspectError,
+    isLoading,
   };
 };
