@@ -8,6 +8,7 @@ The current milestone implements a typed Electron boundary and a workspace inspe
 
 - [Motivation](#motivation)
 - [Current capabilities](#current-capabilities)
+- [Architecture docs](#architecture-docs)
 - [Getting started](#getting-started)
 - [Developer setup](#developer-setup)
 - [Project structure](#project-structure)
@@ -36,6 +37,10 @@ The goal is to build the kind of practical foundation used in Codex-like desktop
 - Keep Electron, Node, and browser-only renderer code separated by TypeScript project boundaries.
 
 Planned work includes script execution, stdout/stderr streaming, cancellation, run history, retries, and observability surfaces for process and IPC lifecycle debugging.
+
+## Architecture docs
+
+- [IPC architecture](docs/ipc-architecture.md): diagram of the renderer, preload bridge, shared contracts, main-process handlers, and local machine resources.
 
 ## Getting started
 
@@ -80,6 +85,9 @@ npm run inspect:workspace -- /path/to/workspace
 ├── eslint.config.mjs          ESLint flat config
 ├── .npmrc                     npm project settings, including engine-strict
 ├── .nvmrc                     expected local Node version
+├── docs/
+│   ├── ipc-architecture.md    IPC architecture diagram page
+│   └── ipc-architecture.svg   GitHub-renderable IPC architecture diagram
 ├── scripts/
 │   └── inspect-workspace.ts   CLI helper for testing workspace inspection
 └── src/

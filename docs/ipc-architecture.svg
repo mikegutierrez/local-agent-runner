@@ -1,0 +1,217 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900" role="img" aria-labelledby="title desc">
+  <title id="title">Local Agent Runner IPC architecture</title>
+  <desc id="desc">Diagram showing renderer, preload bridge, shared contracts, main process handlers, services, and local machine resources used by the app IPC flow.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#314158"/>
+    </marker>
+    <marker id="arrow-muted" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#7b8794"/>
+    </marker>
+    <style>
+      .page { fill: #f8fafc; }
+      .title { font: 700 28px Arial, sans-serif; fill: #172033; }
+      .subtitle { font: 400 15px Arial, sans-serif; fill: #5b6575; }
+      .group { fill: #ffffff; stroke: #cbd5e1; stroke-width: 1.5; rx: 18; }
+      .group-title { font: 700 17px Arial, sans-serif; fill: #172033; }
+      .group-note { font: 400 12px Arial, sans-serif; fill: #667085; }
+      .box { stroke-width: 1.5; rx: 12; }
+      .box-title { font: 700 14px Arial, sans-serif; fill: #172033; }
+      .box-text { font: 400 12px Arial, sans-serif; fill: #4b5565; }
+      .renderer { fill: #e9f7ef; stroke: #5abf7d; }
+      .preload { fill: #eef4ff; stroke: #5c8df6; }
+      .shared { fill: #fff7e6; stroke: #e2a43b; }
+      .main { fill: #f3efff; stroke: #8b6ee8; }
+      .machine { fill: #eef7f8; stroke: #4aa3aa; }
+      .future { fill: #f5f6f8; stroke: #98a2b3; stroke-dasharray: 6 5; }
+      .line { fill: none; stroke: #314158; stroke-width: 2; marker-end: url(#arrow); }
+      .line-muted { fill: none; stroke: #7b8794; stroke-width: 2; stroke-dasharray: 7 6; marker-end: url(#arrow-muted); }
+      .contract-line { fill: none; stroke: #d08b16; stroke-width: 2; stroke-dasharray: 4 5; }
+      .label-bg { fill: #f8fafc; stroke: #e5e7eb; rx: 7; }
+      .label { font: 600 12px Arial, sans-serif; fill: #314158; }
+      .label-muted { font: 600 12px Arial, sans-serif; fill: #667085; }
+      .pill { fill: #dcfce7; stroke: #86efac; rx: 9; }
+      .pill-text { font: 700 11px Arial, sans-serif; fill: #166534; }
+      .pill-muted { fill: #f2f4f7; stroke: #cbd5e1; rx: 9; }
+      .pill-muted-text { font: 700 11px Arial, sans-serif; fill: #475467; }
+    </style>
+  </defs>
+
+  <rect class="page" x="0" y="0" width="1400" height="900"/>
+  <text class="title" x="48" y="54">Local Agent Runner IPC Architecture</text>
+  <text class="subtitle" x="48" y="80">Renderer code talks to Electron only through the typed preload bridge. Main process handlers perform local filesystem, dialog, and git work.</text>
+
+  <!-- Groups -->
+  <rect class="group" x="40" y="120" width="230" height="600"/>
+  <text class="group-title" x="64" y="154">Renderer Process</text>
+  <text class="group-note" x="64" y="174">React UI, no direct Electron access</text>
+
+  <rect class="group" x="310" y="120" width="210" height="600"/>
+  <text class="group-title" x="334" y="154">Preload Script</text>
+  <text class="group-note" x="334" y="174">context-isolated bridge</text>
+
+  <rect class="group" x="560" y="120" width="260" height="610"/>
+  <text class="group-title" x="584" y="154">Shared Contracts</text>
+  <text class="group-note" x="584" y="174">types and channel names</text>
+
+  <rect class="group" x="860" y="120" width="230" height="610"/>
+  <text class="group-title" x="884" y="154">Main Process</text>
+  <text class="group-note" x="884" y="174">IPC handlers and services</text>
+
+  <rect class="group" x="1130" y="120" width="220" height="610"/>
+  <text class="group-title" x="1154" y="154">Local Machine</text>
+  <text class="group-note" x="1154" y="174">trusted OS resources</text>
+
+  <!-- Renderer boxes -->
+  <rect class="box renderer" x="70" y="220" width="170" height="72"/>
+  <text class="box-title" x="92" y="250">App.tsx</text>
+  <text class="box-text" x="92" y="271">buttons and display</text>
+
+  <rect class="box renderer" x="70" y="335" width="170" height="72"/>
+  <text class="box-title" x="92" y="365">useWorkspace</text>
+  <text class="box-text" x="92" y="386">loads workspace state</text>
+
+  <rect class="box renderer" x="70" y="450" width="170" height="82"/>
+  <text class="box-title" x="92" y="480">desktop wrappers</text>
+  <text class="box-text" x="92" y="501">renderer/desktop</text>
+  <text class="box-text" x="92" y="518">calls window.desktop</text>
+
+  <!-- Preload boxes -->
+  <rect class="box preload" x="325" y="235" width="180" height="90"/>
+  <text class="box-title" x="347" y="266">window.desktop</text>
+  <text class="box-text" x="347" y="287">exposed with</text>
+  <text class="box-text" x="347" y="304">contextBridge</text>
+
+  <rect class="box preload" x="325" y="382" width="180" height="86"/>
+  <text class="box-title" x="347" y="413">typed invoke()</text>
+  <text class="box-text" x="347" y="434">ipcRenderer.invoke</text>
+  <text class="box-text" x="347" y="451">request/response</text>
+
+  <rect class="box future" x="325" y="540" width="180" height="78"/>
+  <text class="box-title" x="347" y="571">runs.onEvent</text>
+  <text class="box-text" x="347" y="592">future listener for</text>
+  <text class="box-text" x="347" y="609">pushed RunEvent</text>
+
+  <!-- Shared boxes -->
+  <rect class="box shared" x="590" y="220" width="200" height="76"/>
+  <text class="box-title" x="614" y="250">DesktopAPI</text>
+  <text class="box-text" x="614" y="271">TypeScript shape of</text>
+  <text class="box-text" x="614" y="288">window.desktop</text>
+
+  <rect class="label-bg" x="610" y="322" width="180" height="70"/>
+  <text class="label" x="628" y="346">invoke channel names</text>
+  <text class="box-text" x="628" y="369">workspaces:pick-folder</text>
+  <text class="box-text" x="628" y="388">workspaces:inspect</text>
+
+  <rect class="box shared" x="590" y="420" width="200" height="88"/>
+  <text class="box-title" x="614" y="450">IPC_CHANNELS</text>
+  <text class="box-text" x="614" y="471">invoke and event</text>
+  <text class="box-text" x="614" y="488">channel map</text>
+
+  <rect class="box shared" x="590" y="560" width="200" height="76"/>
+  <text class="box-title" x="614" y="590">Payload types</text>
+  <text class="box-text" x="614" y="611">workspace and run data</text>
+
+  <!-- Main boxes -->
+  <rect class="box main" x="890" y="208" width="170" height="78"/>
+  <text class="box-title" x="912" y="239">registerIpcHandlers</text>
+  <text class="box-text" x="912" y="260">ipcMain.handle()</text>
+
+  <rect class="box main" x="890" y="330" width="170" height="74"/>
+  <text class="box-title" x="912" y="360">workspaceHandlers</text>
+  <text class="box-text" x="912" y="381">pick / inspect</text>
+
+  <rect class="box main" x="890" y="442" width="170" height="90"/>
+  <text class="box-title" x="912" y="472">workspaceService</text>
+  <text class="box-text" x="912" y="493">folder selection</text>
+  <text class="box-text" x="912" y="510">package + git metadata</text>
+
+  <rect class="box future" x="890" y="600" width="170" height="78"/>
+  <text class="box-title" x="912" y="631">runsService</text>
+  <text class="box-text" x="912" y="652">declared in IPC,</text>
+  <text class="box-text" x="912" y="669">not implemented yet</text>
+
+  <!-- Local machine boxes -->
+  <rect class="box machine" x="1165" y="222" width="150" height="70"/>
+  <text class="box-title" x="1185" y="252">Open dialog</text>
+  <text class="box-text" x="1185" y="273">pick folder</text>
+
+  <rect class="box machine" x="1165" y="352" width="150" height="70"/>
+  <text class="box-title" x="1185" y="382">Filesystem</text>
+  <text class="box-text" x="1185" y="403">package.json</text>
+
+  <rect class="box machine" x="1165" y="482" width="150" height="70"/>
+  <text class="box-title" x="1185" y="512">Git CLI</text>
+  <text class="box-text" x="1185" y="533">branch/status</text>
+
+  <rect class="box future" x="1165" y="620" width="150" height="70"/>
+  <text class="box-title" x="1185" y="650">Script process</text>
+  <text class="box-text" x="1185" y="671">future run path</text>
+
+  <!-- Internal renderer flow -->
+  <path class="line" d="M155 292 L155 335"/>
+  <path class="line" d="M155 407 L155 450"/>
+
+  <!-- Renderer to preload -->
+  <path class="line" d="M240 491 C275 491 292 425 325 425"/>
+  <rect class="label-bg" x="220" y="428" width="114" height="24"/>
+  <text class="label" x="230" y="445">window.desktop</text>
+
+  <!-- Preload invoke to main -->
+  <path class="line" d="M505 425 C610 425 635 398 700 398 C790 398 795 247 890 247"/>
+
+  <!-- Declared run path -->
+  <path class="line-muted" d="M505 590 C535 650 575 700 635 708 C735 718 805 655 890 638"/>
+  <rect class="label-bg" x="590" y="650" width="200" height="24"/>
+  <text class="label-muted" x="608" y="667">runs:start-script / cancel</text>
+
+  <!-- Future event path -->
+  <path class="line-muted" d="M890 660 C695 805 420 742 180 535"/>
+  <rect class="label-bg" x="440" y="718" width="158" height="24"/>
+  <text class="label-muted" x="453" y="735">future runs:event push</text>
+
+  <!-- Contract links -->
+  <path class="contract-line" d="M590 258 C555 258 535 280 505 280"/>
+  <path class="contract-line" d="M590 464 C555 464 540 425 505 425"/>
+  <path class="contract-line" d="M790 464 C825 464 850 247 890 247"/>
+  <path class="contract-line" d="M690 560 L690 508"/>
+  <path class="contract-line" d="M690 296 L690 330"/>
+  <path class="contract-line" d="M690 384 L690 420"/>
+
+  <!-- Main flow -->
+  <path class="line" d="M975 286 L975 330"/>
+  <path class="line" d="M975 404 L975 442"/>
+  <path class="line-muted" d="M975 532 L975 600"/>
+
+  <!-- Main to machine -->
+  <path class="line" d="M1060 460 C1110 460 1110 257 1165 257"/>
+  <rect class="label-bg" x="1084" y="287" width="56" height="24"/>
+  <text class="label" x="1095" y="304">dialog</text>
+
+  <path class="line" d="M1060 486 C1108 486 1112 387 1165 387"/>
+  <rect class="label-bg" x="1082" y="397" width="64" height="24"/>
+  <text class="label" x="1093" y="414">read file</text>
+
+  <path class="line" d="M1060 510 C1100 510 1115 517 1165 517"/>
+  <rect class="label-bg" x="1082" y="528" width="64" height="24"/>
+  <text class="label" x="1095" y="545">git exec</text>
+
+  <path class="line-muted" d="M1060 638 C1105 638 1120 655 1165 655"/>
+
+  <!-- Legend -->
+  <rect class="pill" x="48" y="760" width="116" height="26"/>
+  <text class="pill-text" x="64" y="778">implemented now</text>
+  <rect class="pill-muted" x="184" y="760" width="178" height="26"/>
+  <text class="pill-muted-text" x="200" y="778">declared / future run path</text>
+
+  <path class="line" d="M48 820 L136 820"/>
+  <text class="box-text" x="154" y="824">solid dark arrows: implemented command/data flow</text>
+
+  <path class="line-muted" d="M500 820 L588 820"/>
+  <text class="box-text" x="606" y="824">gray dashed arrows/boxes: declared future run flow</text>
+
+  <path class="contract-line" d="M930 820 L1018 820"/>
+  <text class="box-text" x="1036" y="824">amber dashed lines: shared TypeScript contract relationship</text>
+
+  <text class="subtitle" x="48" y="862">Relevant files: src/preload/preload.ts, src/shared/ipc/channels.ts, src/main/ipc/registerIpcHandlers.ts, src/main/services/workspaceService.ts.</text>
+</svg>
