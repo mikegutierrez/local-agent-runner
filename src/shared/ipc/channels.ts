@@ -3,6 +3,7 @@ import type {
   StartScriptRunResponse,
   CancelRunRequest,
   RunEvent,
+  CancelRunResponse,
 } from "../runs/types";
 import type {
   WorkspaceSelection,
@@ -34,7 +35,7 @@ export type IpcInvokeMap = {
   };
   [IPC_CHANNELS.runsCancel]: {
     request: CancelRunRequest;
-    response: void;
+    response: CancelRunResponse;
   };
 };
 

@@ -1,3 +1,12 @@
+export type RunId = `${string}-${string}-${string}-${string}-${string}`;
+
+export type EmitRunEvent = (event: RunEvent) => void;
+
+export type StartScriptRunParams = {
+  request: StartScriptRunRequest;
+  emitEvent: EmitRunEvent;
+};
+
 // Synchronous acknowledgement returned by runs.startScript once the main
 // process has accepted the request and allocated a run id. This does not mean
 // the child process has emitted output or reached the running state yet.
@@ -14,11 +23,16 @@ export type StartScriptRunResponse = {
 };
 
 export type CancelRunRequest = {
-  runId: string;
+  runId: RunId;
+};
+
+export type CancelRunResponse = {
+  ok: boolean;
+  runId: RunId;
+  reason?: string;
 };
 
 export type RunLifecycleState =
-  | "idle"
   | "starting"
   | "running"
   | "completed"

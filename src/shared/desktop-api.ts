@@ -3,6 +3,7 @@ import type {
   StartScriptRunResponse,
   RunEvent,
   CancelRunRequest,
+  CancelRunResponse,
 } from "./runs/types";
 import type {
   WorkspaceSelection,
@@ -17,7 +18,7 @@ export type DesktopAPI = {
   };
   runs: {
     startScript(input: StartScriptRunRequest): Promise<StartScriptRunResponse>;
-    cancel(input: CancelRunRequest): Promise<void>;
+    cancel(input: CancelRunRequest): Promise<CancelRunResponse>;
     // Subscribe to run lifecycle/output events pushed from the main process.
     // The returned function removes the listener and should be called on cleanup.
     onEvent(listener: (event: RunEvent) => void): () => void;

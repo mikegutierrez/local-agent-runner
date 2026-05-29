@@ -1,6 +1,6 @@
-function notImplemented(methodName: string): never {
-  throw new Error(`${methodName} is not implemented yet`);
-}
+import { RunId, StartScriptRunParams } from "../../shared/runs/types";
+import { cancelRun, startScriptRun } from "../processes/scriptRunManager";
 
-export const runsStartScript = () => notImplemented("runsStartScript");
-export const runsCancel = () => notImplemented("runsCancel");
+export const runsStartScript = ({ request, emitEvent }: StartScriptRunParams) =>
+  startScriptRun({ request, emitEvent });
+export const runsCancel = (runId: RunId) => cancelRun(runId);

@@ -2,7 +2,7 @@
 
 Local Agent Runner is a local Electron developer tool for inspecting a workspace and, over time, running script- or agent-like tasks against it. The project is intentionally Codex-adjacent: it is a learning and portfolio project focused on the architecture behind desktop developer tooling rather than a packaged product.
 
-The current milestone implements a typed Electron boundary and a workspace inspector. A user can select a local folder, inspect package metadata, view available npm scripts, and see basic git status information.
+The current milestone implements a typed Electron boundary, a workspace inspector, and the first main-process script runner slice. A user can select a local folder, inspect package metadata, view available npm scripts, and see basic git status information. The run process manager can start npm scripts, stream stdout/stderr events, report completion/failure, and handle cancellation through local development helpers.
 
 ## Table of contents
 
@@ -34,9 +34,12 @@ The goal is to build the kind of practical foundation used in Codex-like desktop
 - Parse npm scripts with explicit missing, valid, and invalid states.
 - Detect whether the selected workspace is a git repository.
 - Display current git branch and dirty-state information when available.
+- Start npm scripts from the main process through a script run manager.
+- Stream run lifecycle, stdout, stderr, completion, failure, and cancellation events.
+- Exercise run start and cancellation behavior through CLI development helpers.
 - Keep Electron, Node, and browser-only renderer code separated by TypeScript project boundaries.
 
-Planned work includes script execution, stdout/stderr streaming, cancellation, run history, retries, and observability surfaces for process and IPC lifecycle debugging.
+Planned work includes wiring the script runner into the renderer, run history, retries, and observability surfaces for process and IPC lifecycle debugging.
 
 ## Architecture docs
 
@@ -69,9 +72,11 @@ Useful local commands:
 ```sh
 npm run start:built
 npm run inspect:workspace -- /path/to/workspace
+npm run runs:start -- /path/to/workspace script-name
+npm run runs:cancel -- /path/to/workspace script-name
 ```
 
-`start:built` launches the last compiled app from `dist`. `inspect:workspace` runs the workspace inspection service from the command line, which is useful when iterating on package or git parsing behavior outside the UI.
+`start:built` launches the last compiled app from `dist`. `inspect:workspace` runs the workspace inspection service from the command line, which is useful when iterating on package or git parsing behavior outside the UI. The `runs:*` helpers exercise the main-process script runner before the full renderer workflow is connected.
 
 ## Project structure
 
@@ -80,8 +85,10 @@ npm run inspect:workspace -- /path/to/workspace
 ├── index.html                 Vite renderer HTML entry point
 ├── package.json               npm scripts, runtime deps, dev tooling, Node engine
 ├── vite.config.mts            Vite renderer build configuration
+├── tsconfig.json              TypeScript project references for editor discovery
 ├── tsconfig.electron.json     TypeScript config for Electron main/preload/shared code
 ├── tsconfig.renderer.json     TypeScript config for browser-safe renderer code
+├── tsconfig.scripts.json      TypeScript config for local development helper scripts
 ├── eslint.config.mjs          ESLint flat config
 ├── .npmrc                     npm project settings, including engine-strict
 ├── .nvmrc                     expected local Node version
@@ -89,7 +96,10 @@ npm run inspect:workspace -- /path/to/workspace
 │   ├── ipc-architecture.md    IPC architecture diagram page
 │   └── ipc-architecture.svg   GitHub-renderable IPC architecture diagram
 ├── scripts/
-│   └── inspect-workspace.ts   CLI helper for testing workspace inspection
+│   ├── inspect-workspace.ts   CLI helper for testing workspace inspection
+│   ├── runs-start-script.ts   CLI helper for exercising script run startup
+│   ├── runs-cancel.ts         CLI helper for exercising script run cancellation
+│   └── runs-test-helpers.ts   shared helpers for run-process CLI scripts
 └── src/
     ├── main/                  privileged Electron/Node process
     │   ├── main.ts            BrowserWindow creation and app lifecycle
@@ -131,7 +141,7 @@ npm run inspect:workspace -- /path/to/workspace
   Launches Electron using the existing compiled output in `dist` without rebuilding.
 
 - `npm run typecheck`
-  Runs TypeScript checks for both the renderer and Electron main/preload code.
+  Runs TypeScript checks for the renderer, Electron main/preload code, and local development helper scripts.
 
 - `npm run lint`
   Runs ESLint across the project.
@@ -144,6 +154,12 @@ npm run inspect:workspace -- /path/to/workspace
 
 - `npm run inspect:workspace -- /path/to/workspace`
   Runs the workspace inspection service from the command line and prints the result. This is a development helper for validating package and git parsing behavior.
+
+- `npm run runs:start -- /path/to/workspace script-name`
+  Runs the early script-runner service entry point from the command line. This is a development helper for validating the process manager boundary.
+
+- `npm run runs:cancel -- /path/to/workspace script-name`
+  Starts a script run and cancels it shortly after startup. This is a development helper for validating cancellation behavior in the same Node process as the active run map.
 
 ## How AI was used in this project
 
