@@ -9,6 +9,10 @@ import {
 } from "../../shared/workspaces/types";
 import { inspectWorkspace, pickWorkspaceFolder } from "../desktop/workspaces";
 
+type UseWorkspaceParams = {
+  clearRuns: () => void;
+};
+
 type UseWorkspaceResult = {
   selection: WorkspaceSelection | null;
   packageMetadata: Omit<PackageMetadata, "scripts"> | null;
@@ -24,7 +28,9 @@ type UseWorkspaceResult = {
   isLoading: boolean;
 };
 
-export const useWorkspace = (): UseWorkspaceResult => {
+export const useWorkspace = ({
+  clearRuns,
+}: UseWorkspaceParams): UseWorkspaceResult => {
   const [selection, setSelection] = useState<WorkspaceSelection | null>(null);
   const [workspaceMetadata, setWorkspaceMetadata] =
     useState<WorkspaceMetadata | null>(null);
@@ -36,6 +42,7 @@ export const useWorkspace = (): UseWorkspaceResult => {
     setWorkspaceMetadata(null);
     setIsLoading(false);
     setInspectError(undefined);
+    clearRuns();
   };
 
   const pickWorkspace = async (): Promise<void> => {

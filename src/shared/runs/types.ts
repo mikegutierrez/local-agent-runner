@@ -2,11 +2,6 @@ export type RunId = `${string}-${string}-${string}-${string}-${string}`;
 
 export type EmitRunEvent = (event: RunEvent) => void;
 
-export type StartScriptRunParams = {
-  request: StartScriptRunRequest;
-  emitEvent: EmitRunEvent;
-};
-
 // Synchronous acknowledgement returned by runs.startScript once the main
 // process has accepted the request and allocated a run id. This does not mean
 // the child process has emitted output or reached the running state yet.
@@ -15,8 +10,13 @@ export type StartScriptRunRequest = {
   scriptName: string;
 };
 
+export type StartScriptRunParams = {
+  request: StartScriptRunRequest;
+  emitEvent: EmitRunEvent;
+};
+
 export type StartScriptRunResponse = {
-  runId: string;
+  runId: RunId;
   workspacePath: string;
   scriptName: string;
   startedAt: string;
@@ -45,7 +45,7 @@ export type RunEvent =
       // lifecycle stream. Consumers should use this for timeline/output state, not as
       // the command response for runs.startScript.
       type: "run:started";
-      runId: string;
+      runId: RunId;
       workspacePath: string;
       scriptName: string;
       command: string;
@@ -53,13 +53,13 @@ export type RunEvent =
     }
   | {
       type: "run:stdout";
-      runId: string;
+      runId: RunId;
       chunk: string;
       timestamp: string;
     }
   | {
       type: "run:stderr";
-      runId: string;
+      runId: RunId;
       chunk: string;
       timestamp: string;
     }
@@ -67,14 +67,14 @@ export type RunEvent =
       // Generic lifecycle transition event for UI state machines. Terminal events
       // below carry their own payloads, so this should not replace them.
       type: "run:state-changed";
-      runId: string;
+      runId: RunId;
       state: RunLifecycleState;
       timestamp: string;
     }
   | {
       // Terminal success event for a process that exited normally with code 0.
       type: "run:completed";
-      runId: string;
+      runId: RunId;
       exitCode: number;
       timestamp: string;
     }
@@ -82,7 +82,7 @@ export type RunEvent =
       // Terminal failure event for spawn errors or non-zero exits. exitCode may be
       // absent when the process failed before an exit code existed.
       type: "run:failed";
-      runId: string;
+      runId: RunId;
       errorMessage: string;
       exitCode?: number | null;
       timestamp: string;
@@ -91,6 +91,6 @@ export type RunEvent =
       // Terminal cancellation event for user-initiated stops. Treat separately from
       // failed so retry/history UI can explain intent correctly.
       type: "run:cancelled";
-      runId: string;
+      runId: RunId;
       timestamp: string;
     };
