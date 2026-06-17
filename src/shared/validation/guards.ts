@@ -1,3 +1,5 @@
+import { RunId, TerminalRunState } from "../runs/types";
+
 type ValueGuard<T> = (value: unknown) => value is T;
 
 export const isPlainObject = (
@@ -20,3 +22,12 @@ export const isRecordOf = <T>(
 
 export const isString = (value: unknown): value is string =>
   typeof value === "string";
+
+export const isRunId = (value: unknown): value is RunId =>
+  typeof value === "string" &&
+  /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(
+    value,
+  );
+
+export const isTerminalRunState = (value: unknown): value is TerminalRunState =>
+  value === "completed" || value === "failed" || value === "cancelled";

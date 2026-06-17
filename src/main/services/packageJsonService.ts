@@ -12,8 +12,7 @@ import {
   PackageScriptsEnvelope,
   InspectionStatus,
 } from "../../shared/workspaces/types";
-
-type NodeFileError = Error & { code?: string };
+import { NodeFileError } from "../types/nodeErrors";
 
 const parsePackageScripts = (value: unknown): PackageScriptsEnvelope => {
   if (value === undefined) return { status: InspectionStatus.MISSING };

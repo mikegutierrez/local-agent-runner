@@ -39,6 +39,8 @@ export type RunLifecycleState =
   | "failed"
   | "cancelled";
 
+export type TerminalRunState = "completed" | "failed" | "cancelled";
+
 export type RunEvent =
   | {
       // Broadcast event emitted when the run is actually created in the process
@@ -94,3 +96,14 @@ export type RunEvent =
       runId: RunId;
       timestamp: string;
     };
+
+export type RunHistoryItem = {
+  runId: RunId;
+  scriptName: string;
+  workspacePath: string;
+  startedAt: string;
+  endedAt: string;
+  state: TerminalRunState;
+  exitCode?: number | null;
+  errorMessage?: string;
+};
