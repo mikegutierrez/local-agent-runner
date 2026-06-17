@@ -4,11 +4,11 @@ import {
   EmitRunEvent,
   RunId,
   RunLifecycleState,
-  StartScriptRunParams,
   StartScriptRunRequest,
   StartScriptRunResponse,
 } from "../../shared/runs/types";
 import { spawn } from "node:child_process";
+import { AppendRunHistory, StartScriptRunParams } from "../types/runs";
 
 type RunRecord = {
   runId: RunId;
@@ -33,6 +33,7 @@ type AttachProcessListenersParams = {
   childProcess: ChildProcessWithoutNullStreams;
   runId: RunId;
   emitEvent: EmitRunEvent;
+  appendRunHistory: AppendRunHistory;
 };
 
 export const activeRuns: ActiveRuns = new Map();
@@ -69,6 +70,7 @@ const attachProcessListeners = ({
   childProcess,
   runId,
   emitEvent,
+  appendRunHistory,
 }: AttachProcessListenersParams): void => {
   childProcess.stdout.on("data", (chunk) => {
     emitEvent({
@@ -90,51 +92,93 @@ const attachProcessListeners = ({
     const run = activeRuns.get(runId);
     if (!run) return;
     if (run?.cancelRequested) {
+      const endedAt = now();
       emitEvent({
         type: "run:cancelled",
         runId,
-        timestamp: now(),
+        timestamp: endedAt,
       });
       emitStateChange({ state: "cancelled", runId, emitEvent });
       activeRuns.delete(runId);
+      void appendRunHistory({
+        runId,
+        scriptName: run.scriptName,
+        workspacePath: run.workspacePath,
+        startedAt: run.startedAt,
+        endedAt,
+        state: "cancelled",
+      });
       return;
     }
     if (exitCode === 0) {
+      const endedAt = now();
       emitEvent({
         type: "run:completed",
         runId,
         exitCode,
-        timestamp: now(),
+        timestamp: endedAt,
       });
       emitStateChange({ state: "completed", runId, emitEvent });
+      void appendRunHistory({
+        runId,
+        scriptName: run.scriptName,
+        workspacePath: run.workspacePath,
+        startedAt: run.startedAt,
+        endedAt,
+        state: "completed",
+        exitCode,
+      });
     } else {
+      const endedAt = now();
       emitEvent({
         type: "run:failed",
         runId,
         errorMessage: `Process exited with code ${exitCode}`,
         exitCode,
-        timestamp: now(),
+        timestamp: endedAt,
       });
       emitStateChange({ state: "failed", runId, emitEvent });
+      void appendRunHistory({
+        runId,
+        scriptName: run.scriptName,
+        workspacePath: run.workspacePath,
+        startedAt: run.startedAt,
+        endedAt,
+        state: "failed",
+        exitCode,
+      });
     }
     activeRuns.delete(runId);
   });
   childProcess.on("error", (error) => {
+    const run = activeRuns.get(runId);
+    if (!run) return;
+    const endedAt = now();
     emitEvent({
       type: "run:failed",
       runId,
       errorMessage: error.message,
       exitCode: 1,
-      timestamp: now(),
+      timestamp: endedAt,
     });
     emitStateChange({ state: "failed", runId, emitEvent });
     activeRuns.delete(runId);
+    void appendRunHistory({
+      runId,
+      scriptName: run.scriptName,
+      workspacePath: run.workspacePath,
+      startedAt: run.startedAt,
+      endedAt,
+      state: "failed",
+      errorMessage: error.message,
+    });
   });
 };
 
 export const startScriptRun = ({
   request,
   emitEvent,
+  appendRunHistory,
 }: StartScriptRunParams): StartScriptRunResponse => {
   const { workspacePath, scriptName } = request;
   const runId: RunId = crypto.randomUUID();
@@ -162,7 +206,7 @@ export const startScriptRun = ({
     cancelRequested: false,
   });
 
-  attachProcessListeners({ childProcess, runId, emitEvent });
+  attachProcessListeners({ childProcess, runId, emitEvent, appendRunHistory });
   emitStateChange({ state: "running", runId, emitEvent });
 
   return {

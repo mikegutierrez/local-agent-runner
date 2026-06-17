@@ -1,3 +1,4 @@
+import { appendRunHistory } from "../src/main/services/runHistoryService";
 import { runsStartScript } from "../src/main/services/runsService";
 import { EmitRunEvent } from "../src/shared/runs/types";
 
@@ -13,5 +14,9 @@ export const startScriptRunFromCliArgs = (emitEvent: EmitRunEvent) => {
     return;
   }
 
-  runsStartScript({ request: { workspacePath, scriptName }, emitEvent });
+  runsStartScript({
+    request: { workspacePath, scriptName },
+    emitEvent,
+    appendRunHistory,
+  });
 };

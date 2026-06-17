@@ -10,11 +10,6 @@ export type StartScriptRunRequest = {
   scriptName: string;
 };
 
-export type StartScriptRunParams = {
-  request: StartScriptRunRequest;
-  emitEvent: EmitRunEvent;
-};
-
 export type StartScriptRunResponse = {
   runId: RunId;
   workspacePath: string;

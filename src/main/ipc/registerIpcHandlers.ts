@@ -11,6 +11,7 @@ import {
   RunEvent,
   StartScriptRunRequest,
 } from "../../shared/runs/types";
+import { appendRunHistory } from "../services/runHistoryService";
 
 export function registerIpcHandlers() {
   // Workspaces
@@ -31,6 +32,7 @@ export function registerIpcHandlers() {
         request,
         emitEvent: (runEvent: RunEvent) =>
           event.sender.send(IPC_CHANNELS.runsEvent, runEvent),
+        appendRunHistory,
       }),
   );
   ipcMain.handle(
