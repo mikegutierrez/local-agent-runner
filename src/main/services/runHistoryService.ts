@@ -5,8 +5,24 @@ import { RunHistoryItem } from "../../shared/runs/types";
 import { NodeFileError } from "../types/nodeErrors";
 import { isRunHistoryItem } from "../../shared/runs/guards";
 
+let historyWriteQueue: Promise<void> = Promise.resolve();
+
 const getRunHistoryPath = () =>
   path.join(app.getPath("userData"), "run-history.json");
+
+const writeRunHistory = async (items: RunHistoryItem[]): Promise<void> => {
+  await fs.promises.writeFile(
+    getRunHistoryPath(),
+    JSON.stringify(items, null, 2),
+  );
+};
+
+const enqueueHistoryWrite = async (
+  write: () => Promise<void>,
+): Promise<void> => {
+  historyWriteQueue = historyWriteQueue.then(write, write);
+  return historyWriteQueue;
+};
 
 export const readRunHistory = async (): Promise<RunHistoryItem[]> => {
   const runHistoryPath = getRunHistoryPath();
@@ -41,12 +57,12 @@ export const appendRunHistory = async (
 ): Promise<boolean> => {
   if (!isRunHistoryItem(item)) return false;
 
-  const runHistoryPath = getRunHistoryPath();
-
   try {
-    const data = await readRunHistory();
-    data.push(item);
-    await fs.promises.writeFile(runHistoryPath, JSON.stringify(data, null, 2));
+    await enqueueHistoryWrite(async () => {
+      const data = await readRunHistory();
+      data.push(item);
+      await writeRunHistory(data);
+    });
     return true;
   } catch (error) {
     console.error("Append run history error.", error);
@@ -55,10 +71,8 @@ export const appendRunHistory = async (
 };
 
 export const clearRunHistory = async (): Promise<boolean> => {
-  const runHistoryPath = getRunHistoryPath();
-
   try {
-    await fs.promises.writeFile(runHistoryPath, JSON.stringify([], null, 2));
+    await enqueueHistoryWrite(() => writeRunHistory([]));
     return true;
   } catch (error) {
     const clearError = error as NodeFileError;
