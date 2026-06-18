@@ -90,6 +90,10 @@ export type RunEvent =
       type: "run:cancelled";
       runId: RunId;
       timestamp: string;
+    }
+  | {
+      type: "history:updated";
+      runId: RunId;
     };
 
 export type RunHistoryItem = {

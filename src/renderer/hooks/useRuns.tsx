@@ -1,14 +1,17 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   CancelRunRequest,
   CancelRunResponse,
   RunEvent,
+  RunHistoryItem,
   RunId,
   RunLifecycleState,
   StartScriptRunRequest,
 } from "../../shared/runs/types";
 import {
   cancel,
+  clearHistory,
+  listHistory,
   onEvent,
   startScript as startScriptRun,
 } from "../desktop/runs";
@@ -38,13 +41,31 @@ type UseRunsResult = {
   runs: Runs | null;
   isRunActive: (run: CurrentRun) => boolean;
   activeRuns: Runs;
+  history: RunHistoryItem[];
+  clearPersistedHistory: () => Promise<boolean>;
 };
 
 export const useRuns = (): UseRunsResult => {
   const [runs, setRuns] = useState<Runs | null>(null);
+  const [history, setHistory] = useState<RunHistoryItem[]>([]);
+
+  const refreshHistory = useCallback(async (): Promise<void> => {
+    const runHistory = await listHistory();
+    setHistory(runHistory);
+  }, []);
+
+  useEffect(() => {
+    void listHistory().then((runHistory) => {
+      setHistory(runHistory);
+    });
+  }, []);
 
   useEffect(() => {
     return onEvent((event: RunEvent) => {
+      if (event.type === "history:updated") {
+        void refreshHistory();
+        return;
+      }
       setRuns((currentRuns) => {
         const existingRuns = currentRuns ?? {};
         const run = existingRuns[event.runId];
@@ -123,7 +144,7 @@ export const useRuns = (): UseRunsResult => {
         }
       });
     });
-  }, []);
+  }, [refreshHistory]);
 
   const startScript = async (input: StartScriptRunRequest): Promise<void> => {
     const result = await startScriptRun(input);
@@ -158,6 +179,13 @@ export const useRuns = (): UseRunsResult => {
     setRuns(null);
   };
 
+  // TODO: trigger confirmation modal
+  const clearPersistedHistory = async (): Promise<boolean> => {
+    const ok = await clearHistory();
+    if (ok) setHistory([]);
+    return ok;
+  };
+
   return {
     startScript,
     cancelRun,
@@ -165,5 +193,7 @@ export const useRuns = (): UseRunsResult => {
     runs,
     isRunActive,
     activeRuns,
+    history,
+    clearPersistedHistory,
   };
 };

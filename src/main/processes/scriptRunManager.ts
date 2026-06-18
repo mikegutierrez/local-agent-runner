@@ -88,7 +88,7 @@ const attachProcessListeners = ({
       timestamp: now(),
     });
   });
-  childProcess.on("exit", (exitCode) => {
+  childProcess.on("exit", async (exitCode) => {
     const run = activeRuns.get(runId);
     if (!run) return;
     if (run?.cancelRequested) {
@@ -100,7 +100,7 @@ const attachProcessListeners = ({
       });
       emitStateChange({ state: "cancelled", runId, emitEvent });
       activeRuns.delete(runId);
-      void appendRunHistory({
+      const didAppend = await appendRunHistory({
         runId,
         scriptName: run.scriptName,
         workspacePath: run.workspacePath,
@@ -108,6 +108,12 @@ const attachProcessListeners = ({
         endedAt,
         state: "cancelled",
       });
+      if (didAppend) {
+        emitEvent({
+          type: "history:updated",
+          runId,
+        });
+      }
       return;
     }
     if (exitCode === 0) {
@@ -119,7 +125,8 @@ const attachProcessListeners = ({
         timestamp: endedAt,
       });
       emitStateChange({ state: "completed", runId, emitEvent });
-      void appendRunHistory({
+      activeRuns.delete(runId);
+      await appendRunHistory({
         runId,
         scriptName: run.scriptName,
         workspacePath: run.workspacePath,
@@ -127,6 +134,10 @@ const attachProcessListeners = ({
         endedAt,
         state: "completed",
         exitCode,
+      });
+      emitEvent({
+        type: "history:updated",
+        runId,
       });
     } else {
       const endedAt = now();
@@ -138,7 +149,8 @@ const attachProcessListeners = ({
         timestamp: endedAt,
       });
       emitStateChange({ state: "failed", runId, emitEvent });
-      void appendRunHistory({
+      activeRuns.delete(runId);
+      await appendRunHistory({
         runId,
         scriptName: run.scriptName,
         workspacePath: run.workspacePath,
@@ -147,10 +159,13 @@ const attachProcessListeners = ({
         state: "failed",
         exitCode,
       });
+      emitEvent({
+        type: "history:updated",
+        runId,
+      });
     }
-    activeRuns.delete(runId);
   });
-  childProcess.on("error", (error) => {
+  childProcess.on("error", async (error) => {
     const run = activeRuns.get(runId);
     if (!run) return;
     const endedAt = now();
@@ -163,7 +178,7 @@ const attachProcessListeners = ({
     });
     emitStateChange({ state: "failed", runId, emitEvent });
     activeRuns.delete(runId);
-    void appendRunHistory({
+    await appendRunHistory({
       runId,
       scriptName: run.scriptName,
       workspacePath: run.workspacePath,
@@ -171,6 +186,10 @@ const attachProcessListeners = ({
       endedAt,
       state: "failed",
       errorMessage: error.message,
+    });
+    emitEvent({
+      type: "history:updated",
+      runId,
     });
   });
 };
@@ -216,6 +235,7 @@ export const startScriptRun = ({
     startedAt,
   };
 };
+
 export const cancelRun = (runId: RunId): CancelRunResponse => {
   const run = activeRuns.get(runId);
   if (run?.cancelRequested === false) {
