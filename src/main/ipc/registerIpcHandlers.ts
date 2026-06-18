@@ -4,7 +4,12 @@ import {
   handlePickWorkspaceFolder,
   handleInspectWorkspace,
 } from "./workspaceHandlers";
-import { handleStartScriptRun, handleCancelRun } from "./runHandlers";
+import {
+  handleStartScriptRun,
+  handleCancelRun,
+  handleClearHistory,
+  handleListHistory,
+} from "./runHandlers";
 import { InspectWorkspaceRequest } from "../../shared/workspaces/types";
 import {
   CancelRunRequest,
@@ -40,4 +45,6 @@ export function registerIpcHandlers() {
     (_event: IpcMainInvokeEvent, request: CancelRunRequest) =>
       handleCancelRun(request),
   );
+  ipcMain.handle(IPC_CHANNELS.runsHistoryList, () => handleListHistory());
+  ipcMain.handle(IPC_CHANNELS.runsHistoryClear, () => handleClearHistory());
 }

@@ -4,6 +4,7 @@ import type {
   CancelRunRequest,
   RunEvent,
   CancelRunResponse,
+  RunHistoryItem,
 } from "../runs/types";
 import type {
   WorkspaceSelection,
@@ -17,6 +18,8 @@ export const IPC_CHANNELS = {
   runsStartScript: "runs:start-script",
   runsCancel: "runs:cancel",
   runsEvent: "runs:event",
+  runsHistoryList: "runs:history-list",
+  runsHistoryClear: "runs:history-clear",
 } as const;
 
 // Request/response channels used with ipcRenderer.invoke/ipcMain.handle.
@@ -36,6 +39,14 @@ export type IpcInvokeMap = {
   [IPC_CHANNELS.runsCancel]: {
     request: CancelRunRequest;
     response: CancelRunResponse;
+  };
+  [IPC_CHANNELS.runsHistoryList]: {
+    request: void;
+    response: RunHistoryItem[];
+  };
+  [IPC_CHANNELS.runsHistoryClear]: {
+    request: void;
+    response: boolean;
   };
 };
 

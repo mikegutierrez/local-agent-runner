@@ -4,6 +4,7 @@ import type {
   RunEvent,
   CancelRunRequest,
   CancelRunResponse,
+  RunHistoryItem,
 } from "./runs/types";
 import type {
   WorkspaceSelection,
@@ -22,5 +23,7 @@ export type DesktopAPI = {
     // Subscribe to run lifecycle/output events pushed from the main process.
     // The returned function removes the listener and should be called on cleanup.
     onEvent(listener: (event: RunEvent) => void): () => void;
+    listHistory(): Promise<RunHistoryItem[]>;
+    clearHistory(): Promise<boolean>;
   };
 };

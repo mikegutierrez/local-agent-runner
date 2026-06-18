@@ -1,6 +1,7 @@
-import { appendRunHistory } from "../src/main/services/runHistoryService";
 import { runsStartScript } from "../src/main/services/runsService";
 import { EmitRunEvent } from "../src/shared/runs/types";
+
+const skipRunHistoryPersistence = async () => false;
 
 export const startScriptRunFromCliArgs = (emitEvent: EmitRunEvent) => {
   const workspacePath = process.argv[2];
@@ -17,6 +18,6 @@ export const startScriptRunFromCliArgs = (emitEvent: EmitRunEvent) => {
   runsStartScript({
     request: { workspacePath, scriptName },
     emitEvent,
-    appendRunHistory,
+    appendRunHistory: skipRunHistoryPersistence,
   });
 };

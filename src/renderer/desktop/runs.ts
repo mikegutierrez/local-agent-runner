@@ -10,3 +10,5 @@ export const cancel = async (input: CancelRunRequest) =>
   window.desktop.runs.cancel(input);
 export const onEvent = (listener: (event: RunEvent) => void) =>
   window.desktop.runs.onEvent(listener);
+export const listHistory = async () => window.desktop.runs.listHistory();
+export const clearHistory = async () => window.desktop.runs.clearHistory();

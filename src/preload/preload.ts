@@ -32,6 +32,8 @@ const desktopAPI: DesktopAPI = {
         ipcRenderer.removeListener(IPC_CHANNELS.runsEvent, callback);
       };
     },
+    listHistory: async () => invoke(IPC_CHANNELS.runsHistoryList, undefined),
+    clearHistory: async () => invoke(IPC_CHANNELS.runsHistoryClear, undefined),
   },
 };
 
